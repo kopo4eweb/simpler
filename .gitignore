@@ -1,0 +1,6 @@
+
+/log/*
+!/log/.keep
+
+/db/*
+!/db/.keep
