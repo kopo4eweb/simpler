@@ -23,6 +23,8 @@ module Simpler
       send(action)
       write_response
 
+      @response.status = @request.env['simpler.status']
+
       @response.finish
     end
 
@@ -44,12 +46,9 @@ module Simpler
     end
 
     def render_body
-      if @request.env['simpler.template'].class == Hash && @request.env['simpler.template'].has_key?(:plain)
-        return @request.env['simpler.template'][:plain]
-      else
-        # send corrent context controller to view render
-        View.new(@request.env).render(binding)
-      end
+      set_render_template
+
+      View.new(@request.env).render(binding)
     end
 
     def params
@@ -59,16 +58,19 @@ module Simpler
     def render(template = nil, **args)
       set_status(args)
       set_headers(args)
-      render_template(template)
-      render_plain(args)
+      set_render_template(template, args)
     end
 
-    def render_template(template)
-      @request.env['simpler.template'] = template unless template.nil?
-    end
+    def set_render_template(template = nil, args = {})
+      if @request.env['simpler.template'].nil?
+        res = { type: 'template', value: template }
 
-    def render_plain(args)
-      @request.env['simpler.template'] = { plain: args[:plain] } if args.has_key?(:plain)
+        if args.has_key?(:plain)
+          res = { type: 'plain', value: args[:plain] }
+        end
+
+        @request.env['simpler.template'] = res
+      end
     end
 
     def set_status(args)

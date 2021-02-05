@@ -5,8 +5,7 @@ class TestsController < Simpler::Controller
   end
 
   def create
-    test = params['test']
-    id = Test.insert(title: test['title'], level: test['level'].to_i)
+    id = Test.insert(test_params(params))
 
     redirect_to("/tests/#{id}")
   end
@@ -23,8 +22,7 @@ class TestsController < Simpler::Controller
 
   def update
     get_test
-    test = params['test']
-    @test.update(title: test['title'], level: test['level'].to_i)
+    @test.update(test_params(params))
 
     redirect_to("/tests/#{@test.id}")
   end
@@ -41,5 +39,10 @@ class TestsController < Simpler::Controller
   def get_test
     @test = Test[params[:id].to_i]
     render plain: "Test not found", status: 404, headers: {'Content-Type' => 'text/plain'} if @test.nil?
+  end
+
+  def test_params(params)
+    test = params['test']
+    { title: test['title'], level: test['level'].to_i }
   end
 end
